@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 /// Create a Linux machine and run it.
-const linux = async (worker_url, variant, vmlinux, boot_cmdline, initrd, log, console_write) => {
+const linux = async (worker_url, variant, vmlinux, boot_cmdline, initrd, log, console_write, terminal_size) => {
   const arch_bits = variant.startsWith("wasm32_") ? 32 : 64;
   const Ulong = (arch_bits == 32) ? Number : BigInt;
 
@@ -222,6 +222,7 @@ const linux = async (worker_url, variant, vmlinux, boot_cmdline, initrd, log, co
       locks: locks,
       last_task: last_task,
       runner_name: name,
+      terminal_size: terminal_size,
     });
 
     return {

@@ -43,8 +43,16 @@
         }
         const initrd = await initrd_request.arrayBuffer();
 
-        const os = await linux(worker_url, variant, vmlinux, boot_cmdline, initrd, log, console_write);
+        const terminal_size = new Int32Array(new SharedArrayBuffer(8));
+        Atomics.store(terminal_size, 0, term.rows);
+        Atomics.store(terminal_size, 1, term.cols);
+
+        const os = await linux(worker_url, variant, vmlinux, boot_cmdline, initrd, log, console_write, terminal_size);
         term.onData(data => os.key_input(data));
+        term.onResize(({ rows, cols }) => {
+          Atomics.store(terminal_size, 0, rows);
+          Atomics.store(terminal_size, 1, cols);
+        });
       } catch (error) {
         log("Linux/Wasm failed with (" + error.name + "): " + error.message + "\n" + error.stack);
         throw error;
