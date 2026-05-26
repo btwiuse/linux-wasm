@@ -30,6 +30,9 @@
   /// Flag that a clone callback should be called instead of _start().
   let should_call_clone_callback = false;
 
+  /// Shared memory for terminal dimensions [rows, cols], updated by the main thread.
+  let terminal_size = new Int32Array(new SharedArrayBuffer(8));
+
   /// A messenger to synchronize with the main thread, as well as communicate how many bytes were read on the console.
   let console_read_messenger = new Int32Array(new SharedArrayBuffer(4));
 
@@ -263,6 +266,14 @@
       let console_read_count = Atomics.load(console_read_messenger, 0);
       return console_read_count;
     },
+
+    wasm_driver_hvc_get_winsize: () => {
+      // Returns packed (rows << 16) | cols, or 0 if not available.
+      const rows = Atomics.load(terminal_size, 0);
+      const cols = Atomics.load(terminal_size, 1);
+      if (rows === 0 && cols === 0) return 0;
+      return (rows << 16) | cols;
+    },
   };
 
   /// Callbacks from the main thread.
@@ -289,6 +300,9 @@
       memory = message.memory;
       locks = message.locks;
       switch_to_last_task = message.last_task; // Only defined for tasks and CPU 0 (init task).
+      if (message.terminal_size) {
+        terminal_size = message.terminal_size;
+      }
 
       if (message.user_executable) {
         // We are in a new runner that should duplicate the user executable. Happens when someone calls clone().
