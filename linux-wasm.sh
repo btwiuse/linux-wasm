@@ -287,11 +287,11 @@ case "$1" in # note use of ;;& meaning that each case is re-tested (can hit mult
             find . -print0 | cpio --null -ov --format=newc -A -O "$LW_INSTALL/initramfs-$LW_VARIANT/initramfs.cpio"
         )
 
-        # And copy a simple init too.
+        # And copy the initramfs overlay files (init, inittab, helper scripts, symlinks...).
         (
             cd "$LW_ROOT/patches/initramfs/"
             # The below command must run in the same directory as the root of the files it will copy.
-            echo "./init" | cpio -ov --format=newc -A -O "$LW_INSTALL/initramfs-$LW_VARIANT/initramfs.cpio"
+            find . -mindepth 1 ! -name initramfs-base.cpio -print0 | cpio --null -ov --format=newc -A -O "$LW_INSTALL/initramfs-$LW_VARIANT/initramfs.cpio"
         )
 
         # Finally we should zip it up so that it takes less space. This is the file to distribute.
