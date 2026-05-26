@@ -1,0 +1,27 @@
+#!/bin/sh
+
+term_rows=
+term_cols=
+
+for param in $(cat /proc/cmdline)
+do
+    case "$param" in
+        wasm_term_rows=*)
+            term_rows="${param#*=}"
+            ;;
+        wasm_term_cols=*)
+            term_cols="${param#*=}"
+            ;;
+    esac
+done
+
+[ -n "$term_rows" ] && export LINES="$term_rows"
+[ -n "$term_cols" ] && export COLUMNS="$term_cols"
+: "${TERM:=linux}"
+export TERM
+
+if [ -n "$term_rows" ] && [ -n "$term_cols" ]; then
+    stty rows "$term_rows" cols "$term_cols"
+fi
+
+exec /bin/sh

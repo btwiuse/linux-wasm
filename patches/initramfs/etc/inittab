@@ -1,0 +1,5 @@
+::sysinit:/bin/mkdir -p /dev/pts
+::sysinit:/bin/mount -t proc none /proc
+::sysinit:/bin/mount -t sysfs none /sys
+::sysinit:/bin/mount -t devpts -o ptmxmode=0666,mode=0620 devpts /dev/pts
+::respawn:/bin/script -q -c /bin/start-shell /dev/null
